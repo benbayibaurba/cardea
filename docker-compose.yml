@@ -1,0 +1,38 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:v0.13.0
+    command:
+      - "--model=benbayibaurba/cardea-v0"
+      - "--served-model-name=cardea"
+      - "--tensor-parallel-size=${TP_SIZE:-1}"
+      - "--gpu-memory-utilization=${GPU_MEM_UTIL:-0.9}"
+      - "--dtype=bfloat16"
+      - "--max-model-len=20000"
+    ipc: host
+    ports:
+      - "${VLLM_PORT:-8000}:8000"
+    volumes:
+      # a host HF cache if HF_HOME is set, otherwise a named docker volume
+      - ${HF_HOME:-hf-cache}:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      CARDEA_BASE_URL: http://vllm:8000/v1
+      APP_PORT: ${APP_PORT:-7860}
+    ports:
+      - "${APP_PORT:-7860}:${APP_PORT:-7860}"
+    depends_on:
+      - vllm
+
+volumes:
+  hf-cache:

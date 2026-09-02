@@ -1,0 +1,12 @@
+__pycache__/
+.ipynb_checkpoints/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.env
+.gradio/
+*.dcm
+NotoSansTC-VariableFont_wght.ttf
